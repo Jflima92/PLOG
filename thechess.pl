@@ -36,6 +36,7 @@ set_prolog_flag(fileerrors,off),
 nl, intro, nl, nl,
         write('1 - Coloca peças no Tabuleiro'), nl,
         write('2 - Move peças colocadas'), nl,
+        write('3 - Verificar possíveis ataques'), nl,
        
         repeat, read(Op), Op >= 0, Op =< 12,!,
         menu(Op, Board), repeat, skip_line, get_code(_), startmenu(Board).
@@ -72,8 +73,8 @@ menu(2, Board):-
         startmenu(BoardOut).
 
 menu(3, Board):-
-        printBoard(Board),
-        startmenu.
+        checkValidBoard(Board),
+        startmenu(Board).
 
 
 menu(4, Board):-
@@ -101,11 +102,11 @@ piece('P', 6).
 
 
 printLine([]).
+
 printLine([P1|Resto]):-
-
-print(` `), print(P1),
-
-printLine(Resto).
+        print(` `),
+        print(P1),
+        printLine(Resto).
 
 
 /* Imprimir tabuleiro */
@@ -155,7 +156,9 @@ checkLines([Linha|Resto], X, [Linha|NewResto], Y, Piece):-
                                          
 fillBoard(BoardIn, BoardOut, PieceNumber, X, Y):-
         piece(Piece, PieceNumber),
-        checkLines(BoardIn, Y, BoardOut, X, Piece).
+        NewX is X-1,
+        NewY is Y-1,
+        checkLines(BoardIn, NewY, BoardOut, NewX, Piece).
 
 
 % Mover peça
@@ -190,4 +193,9 @@ movePiece(BoardIn, BoardOut, Xi, Yi, Xf, Yf, Piece):-
         print('    1 2 3 4 5 6 7 8 '),
         nl, 
         printBoard(BoardOut,1).
+        
+%% Verificação de ataques na mesa
+
+%%checkValidBoard(Board):-
+                                                                                                                                                                                                                                                
         
