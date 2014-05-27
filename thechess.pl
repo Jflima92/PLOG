@@ -179,30 +179,7 @@ checkLinesForEmpty([_|Resto], X, Y):-
         checkLinesForEmpty(Resto, X, NewY).
 
 checkPosEmpty(' ').
-
-%Executa a transformação
-
-checkColumn([Elem|Resto], [' '|Resto], 0, Elem).       
-        
-checkColumn([Elem|Resto], [Elem|NewResto], Yi, Xf, Yf):-
-        Yi>0,
-        NewYi is Yi-1,
-        checkColumn(Resto, NewResto, NewYi, Xf, Yf).
-
-checkLine([Linha|Resto], [Linha2|Resto], 0, Yi, Elem):-
-        checkColumn(Linha, Linha2, Yi, Elem).
-                        
-checkLine([Linha|Resto], [Linha|NewResto], Xi, Yi, Elem):-
-        Xi>0,
-        NewXi is Xi-1,
-        checkLine(Resto, NewResto, NewXi, Yi, Elem).
-        
-        
-removePieceFromPos(BoardIn, BoardFinal, Xi, Yi, Xf, Yf):-
-         %checkLine(BoardIn, BoardOut, Xi, Yi, Elem),
-                checkLinesForEmpty(BoardIn, Xi, Yi),
-         fillBoard(BoardIn, BoardFinal, Elem, Xf, Yf).
-                       
+             
 
 movePiece(BoardIn, BoardOut, Xi, Yi, Xf, Yf, Piece):-
         checkLinesForEmpty(BoardIn, Xf, Yf),
