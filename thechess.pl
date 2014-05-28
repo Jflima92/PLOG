@@ -184,6 +184,7 @@ checkPosEmpty(' ').
 
 movePiece(BoardIn, BoardOut, Xi, Yi, Xf, Yf, Piece):-
         checkPosForEmpty(BoardIn, Xf, Yf),
+        \+checkPosForEmpty(BoardIn, Xi, Yi),
         piece(' ', Pnum),
         fillBoard(BoardIn, BoardFinal, Pnum, Xi, Yi),
         piece(Piece, PieceNum),
@@ -194,7 +195,7 @@ movePiece(BoardIn, BoardOut, Xi, Yi, Xf, Yf, Piece):-
 %% Verificação de ataques na mesa
 
 
-notNullElemCheck(Elem):-
+nullElemCheck(Elem):-
         Elem == ' '.
 
 /*checkColumnsFirst([Elem|Resto], [Elem|NewResto], Y, NewElem):-
@@ -227,7 +228,7 @@ checkNextElem([L|Ls], X, Y, FixedBoard):-
 
 checkColumn([], _, _,_).
 checkColumn([C|Cs], X, Y, FixedBoard):-
-        \+(notNullElemCheck(C)),
+        \+(nullElemCheck(C)),
         NewX is X+1,
         checkPieceValidMoves(FixedBoard, C, X, Y),
         write('não afectado'),
@@ -256,7 +257,7 @@ checkBoardLimits(X, Y):-
 checkKingMovesLeft1(Board, X, Y):-
         XL1 is X-1,                                                                     %             xo
         checkBoardLimits(XL1, Y),
-        checkPosForEmpty(Board, XL1, Y),
+        \+checkPosForEmpty(Board, XL1, Y),
         write('L1: '),
         write('Incompatibilidade na posição: '),write(XL1),write(', '),write(Y),nl.
 
@@ -264,7 +265,7 @@ checkKingMovesLeft2(Board, X, Y):-
         XL1 is X-1,                                                                     %              x                                                                       %               o
         YL1 is Y-1, 
         checkBoardLimits(XL1, YL1),        
-        checkPosForEmpty(Board, XL1, YL1),
+        \+checkPosForEmpty(Board, XL1, YL1),
         write('L2: '),
         write('Incompatibilidade na posição: '),write(XL1),write(', '),write(YL1),nl.
 
@@ -272,7 +273,7 @@ checkKingMovesLeft3(Board, X, Y):-
         XL1 is X-1,                                                                     %               o
         YL1 is Y+1,                                                                     %              x 
         checkBoardLimits(XL1, YL1),
-        checkPosForEmpty(Board, XL1, YL1),
+        \+checkPosForEmpty(Board, XL1, YL1),                                                            %Verify negation
         write('L3: '),
         write('Incompatibilidade na posição: '),write(XL1),write(', '),write(YL1),nl.
 
@@ -280,21 +281,21 @@ checkKingMovesLeft3(Board, X, Y):-
 checkKingMovesBot(Board, X, Y):-                                                       %               o
         Y1 is Y+1,                                                                     %               x 
         checkBoardLimits(X, Y1),
-        checkPosForEmpty(Board, X, Y1),
+        \+checkPosForEmpty(Board, X, Y1),
         write('B: '),
         write('Incompatibilidade na posição: '),write(X),write(', '),write(Y1),nl.
 
 checkKingMovesTop(Board, X, Y):-                                                                       
         Y2 is Y-1,                                                                     %              x 
         checkBoardLimits(X, Y2),                                                      %               o
-        checkPosForEmpty(Board, X, Y2),
+        \+checkPosForEmpty(Board, X, Y2),
         write('T: '),
         write('Incompatibilidade na posição: '),write(X),write(', '),write(Y2),nl.        
 
 checkKingMovesRight1(Board, X, Y):-
         XL1 is X+1,                                                                     %             ox
         checkBoardLimits(XL1, Y),
-        checkPosForEmpty(Board, XL1, Y),
+        \+checkPosForEmpty(Board, XL1, Y),
         write('R1: '),
         write('Incompatibilidade na posição: '),write(XL1),write(', '),write(Y),nl.
 
@@ -302,7 +303,7 @@ checkKingMovesRight2(Board, X, Y):-
         XL1 is X+1,                                                                     %              o                                                                       %               o
         YL1 is Y+1,                                                                     %               x
         checkBoardLimits(XL1, YL1),        
-        checkPosForEmpty(Board, XL1, YL1),
+        \+checkPosForEmpty(Board, XL1, YL1),
         write('R2: '),
         write('Incompatibilidade na posição: '),write(XL1),write(', '),write(YL1),nl.
         
@@ -311,7 +312,7 @@ checkKingMovesRight3(Board, X, Y):-
         XL1 is X+1,                                                                     %               x
         YL1 is Y-1,                                                                     %              o 
         checkBoardLimits(XL1, YL1),
-        checkPosForEmpty(Board, XL1, YL1),
+        \+checkPosForEmpty(Board, XL1, YL1),
         write('R3: '),
         write('Incompatibilidade na posição: '),write(XL1),write(', '),write(YL1),nl.
         
