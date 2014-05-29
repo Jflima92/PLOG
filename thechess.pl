@@ -237,6 +237,9 @@ checkColumn([_|Cs], X, Y, FixedBoard):-
         NewX is X+1,
         checkColumn(Cs, NewX, Y, FixedBoard).
         
+
+% Verifying All Pieces movements
+
 checkPieceValidMoves(Board, 'K', X, Y):-
         checkKingMovesLeft1(Board, X, Y),
         checkKingMovesLeft2(Board, X, Y),
@@ -247,11 +250,23 @@ checkPieceValidMoves(Board, 'K', X, Y):-
         checkKingMovesRight2(Board, X, Y),
         checkKingMovesRight3(Board, X, Y).
 
+checkPieceValidMoves(Board, 'Q', X, Y):-     
+        checkQueenAllMoves(Board, X, Y).
+
+checkPieceValidMoves(Board, 'R', X, Y):-     
+        checkRookAllMoves(Board, X, Y).
+
+checkPieceValidMoves(Board, 'B', X, Y):-     
+        checkBishopAllMoves(Board, X, Y).
+
 checkBoardLimits(X, Y):-
         X > 0,
         X =< 8,
         Y > 0,
-        X =< 8.
+        Y =< 8.
+
+
+% Verifying attacks made by the King - Tested all King neighbour positions
 
 checkKingMovesLeft1(Board, X, Y):-
         XL1 is X-1,                                                                     %             xo
@@ -331,7 +346,137 @@ checkKingMovesRight3(Board, X, Y):-
 
 checkKingMovesRight3(_,_,_).
         
+%Search for each movement - Used by several pieces
 
+checkAllMovesLeft(_,1,_).
+checkAllMovesLeft(Board, X, Y):-
+        NewX is X-1,
+        checkBoardLimits(NewX, Y),
+        ( \+checkPosForEmpty(Board, NewX, Y) ->
+        write('Incompatibilidade na posição: '),write(NewX), write(', '), write(Y),nl
+        ;
+        checkAllMovesLeft(Board, NewX, Y)).
+
+
+
+checkAllMovesRight(_,8,_).
+checkAllMovesRight(Board, X, Y):-
+        NewX is X+1,
+        checkBoardLimits(NewX, Y),
+        ( \+checkPosForEmpty(Board, NewX, Y) ->
+        write('Incompatibilidade na posição: '),write(NewX), write(', '), write(Y),nl
+        ;
+        checkAllMovesRight(Board, NewX, Y)).
+
+checkAllMovesTop(_,_,1).
+checkAllMovesTop(Board, X, Y):-
+        NewY is Y-1,
+        checkBoardLimits(X, NewY),
+        ( \+checkPosForEmpty(Board, X, NewY) ->
+        write('Incompatibilidade na posição: '),write(X), write(', '), write(NewY),nl
+        ;
+        checkAllMovesTop(Board, X, NewY)).
+
+checkAllMovesBot(_,_,8).
+checkAllMovesBot(Board, X, Y):-
+        NewY is Y+1,
+        checkBoardLimits(X, NewY),
+        ( \+checkPosForEmpty(Board, X, NewY) ->
+        write('Incompatibilidade na posição: '),write(X), write(', '), write(NewY),nl
+        ;
+        checkAllMovesBot(Board, X, NewY)).
+
+checkAllMovesDiagonalLT(_,1,1).
+checkAllMovesDiagonalLT(Board, X, Y):-
+        NewX is X-1,
+        NewY is Y-1,
+        checkBoardLimits(NewX, NewY),
+        ( \+checkPosForEmpty(Board, NewX, NewY) ->
+        write('Incompatibilidade na posição: '),write(NewX), write(', '), write(NewY),nl
+        ;
+        checkAllMovesDiagonalLT(Board, NewX, NewY)).
+
+checkAllMovesDiagonalLT(_,_,_).
+
+checkAllMovesDiagonalLB(_,1,8).
+checkAllMovesDiagonalLB(Board, X, Y):-
+        NewX is X-1,
+        NewY is Y+1,
+        checkBoardLimits(NewX, NewY),
+        ( \+checkPosForEmpty(Board, NewX, NewY) ->
+        write('Incompatibilidade na posição: '),write(NewX), write(', '), write(NewY),nl
+        ;
+        checkAllMovesDiagonalLB(Board, NewX, NewY)).
+
+checkAllMovesDiagonalLB(_,_,_).
+
+checkAllMovesDiagonalRB(_,8,8).
+checkAllMovesDiagonalRB(Board, X, Y):-
+        NewX is X+1,
+        NewY is Y+1,
+        checkBoardLimits(NewX, NewY),
+        ( \+checkPosForEmpty(Board, NewX, NewY) ->
+        write('Incompatibilidade na posição: '),write(NewX), write(', '), write(NewY),nl
+        ;
+        checkAllMovesDiagonalRB(Board, NewX, NewY)).
+
+checkAllMovesDiagonalRB(_,_,_).
+
+checkAllMovesDiagonalRT(_,8,1).
+checkAllMovesDiagonalRT(Board, X, Y):-
+        NewX is X+1,
+        NewY is Y-1,
+        checkBoardLimits(NewX, NewY),
+        ( \+checkPosForEmpty(Board, NewX, NewY) ->
+        write('Incompatibilidade na posição: '),write(NewX), write(', '), write(NewY),nl
+        ;
+        checkAllMovesDiagonalRT(Board, NewX, NewY)).
+
+checkAllMovesDiagonalRT(_,_,_).       
+
+
+% Verifying attacks made by the Queen - Tested the positions for all movements (Up, down, and so on)
+
+checkQueenAllMoves(Board, X, Y):-
+        checkAllMovesLeft(Board, X, Y),
+        checkAllMovesRight(Board, X, Y),
+        checkAllMovesBot(Board, X, Y),
+        checkAllMovesTop(Board, X, Y),
+        checkAllMovesDiagonalLT(Board, X, Y),
+        checkAllMovesDiagonalLB(Board, X, Y),
+        checkAllMovesDiagonalRT(Board, X, Y),
+        checkAllMovesDiagonalRB(Board, X, Y).
+
+% Verifying attacks made by the Rook - Tested the positions for up, down, left, right
+
+checkRookAllMoves(Board, X, Y):-
+        checkAllMovesLeft(Board, X, Y),
+        checkAllMovesRight(Board, X, Y),
+        checkAllMovesBot(Board, X, Y),
+        checkAllMovesTop(Board, X, Y).
+
+% Verifying attacks made by the Bishop - Tested the positions for diagonals
+
+checkBishopAllMoves(Board, X, Y):-
+        checkAllMovesDiagonalLT(Board, X, Y),
+        checkAllMovesDiagonalLB(Board, X, Y),
+        checkAllMovesDiagonalRT(Board, X, Y),
+        checkAllMovesDiagonalRB(Board, X, Y).
+        
+         
+checkKnightAllMoves(Board, X, Y):-
+        checkKnightMoveLT1(Board, X, Y),
+        checkKnightMoveLT2(Board, X, Y),
+        checkKnightMoveLB1(Board, X, Y),
+        checkKnightMoveLB2(Board, X, Y),
+        checkKnightMoveRT1(Board, X, Y),
+        checkKnightMoveRT2(Board, X, Y),
+        checkKnightMoveRB1(Board, X, Y),
+        checkKnightMoveRB2(Board, X, Y).
+
+checkKnightMoveLT1(Board, X, Y):-
+        
+        
 
               
 
