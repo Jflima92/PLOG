@@ -1,4 +1,5 @@
 :- use_module(library(lists)).
+:- use_module(library(random)).
 
 /* Criaçao do tabuleiro */
 
@@ -37,6 +38,7 @@ nl, intro, nl, nl,
         write('1 - Coloca peças no Tabuleiro'), nl,
         write('2 - Move peças colocadas'), nl,
         write('3 - Verificar possíveis ataques'), nl,
+        write('4 - Inserção e Verificação Generate and Test'), nl,
        
         repeat, read(Op), Op >= 0, Op =< 12,!,
         menu(Op, Board), repeat, skip_line, get_code(_), startmenu(Board).
@@ -78,7 +80,9 @@ menu(3, Board):-
 
 
 menu(4, Board):-
-        startmenu.
+        generateAndTest(Board),
+        emptyboard(Board),
+        startmenu(Board).
         
 
 /* Imprimir linhas do tabuleiro */
@@ -129,7 +133,8 @@ printInBoard(Board, BoardOut):-
         fillBoard(Board, CenasNovas, 1, 2, 2),
         fillBoard(CenasNovas, CenasMaisNovas, 2, 5, 4),
         fillBoard(CenasMaisNovas, CenasAindaMaisNovas, 3, 2, 7),
-        fillBoard(CenasAindaMaisNovas, BoardOut, 5, 1, 6),
+        fillBoard(CenasAindaMaisNovas, MaisPeao, 5, 1, 6),
+        fillBoard(MaisPeao, BoardOut, 6, 6, 3),
         printBoard(BoardOut,1).
        
 
@@ -259,6 +264,12 @@ checkPieceValidMoves(Board, 'R', X, Y):-
 checkPieceValidMoves(Board, 'B', X, Y):-     
         checkBishopAllMoves(Board, X, Y).
 
+checkPieceValidMoves(Board, 'N', X, Y):-     
+        checkKnightAllMoves(Board, X, Y).
+
+checkPieceValidMoves(Board, 'P', X, Y):-     
+        checkPawnAllMoves(Board, X, Y).
+
 checkBoardLimits(X, Y):-
         X > 0,
         X =< 8,
@@ -272,7 +283,6 @@ checkKingMovesLeft1(Board, X, Y):-
         XL1 is X-1,                                                                     %             xo
         checkBoardLimits(XL1, Y),
         \+checkPosForEmpty(Board, XL1, Y),
-        write('L1: '),
         write('Incompatibilidade na posição: '),write(XL1),write(', '),write(Y),nl.
 
 checkKingMovesLeft1(_,_,_).
@@ -282,7 +292,6 @@ checkKingMovesLeft2(Board, X, Y):-
         YL1 is Y-1, 
         checkBoardLimits(XL1, YL1),        
         \+checkPosForEmpty(Board, XL1, YL1),
-        print('L2: '),
         write('Incompatibilidade na posição: '),write(XL1),write(', '),write(YL1),nl.
 
 checkKingMovesLeft2(_,_,_).
@@ -292,8 +301,7 @@ checkKingMovesLeft3(Board, X, Y):-
         XL1 is X-1,                                                                     %               o
         YL1 is Y+1,                                                                     %              x 
         checkBoardLimits(XL1, YL1),
-       \+checkPosForEmpty(Board, XL1, YL1),                                                            %Verify negation
-        write('L3: '),
+       \+checkPosForEmpty(Board, XL1, YL1),
         write('Incompatibilidade na posição: '),write(XL1),write(', '),write(YL1),nl.
 
 checkKingMovesLeft3(_,_,_).
@@ -303,7 +311,6 @@ checkKingMovesBot(Board, X, Y):-                                                
         Y1 is Y+1,                                                                     %               x 
         checkBoardLimits(X, Y1),
         \+checkPosForEmpty(Board, X, Y1),
-        write('B: '),
         write('Incompatibilidade na posição: '),write(X),write(', '),write(Y1),nl.
 
 checkKingMovesBot(_,_,_).
@@ -312,7 +319,6 @@ checkKingMovesTop(Board, X, Y):-
         Y2 is Y-1,                                                                     %              x 
         checkBoardLimits(X, Y2),                                                      %               o
         \+checkPosForEmpty(Board, X, Y2),
-        write('T: '),
         write('Incompatibilidade na posição: '),write(X),write(', '),write(Y2),nl.     
 
 checkKingMovesTop(_,_,_).   
@@ -321,7 +327,6 @@ checkKingMovesRight1(Board, X, Y):-
         XL1 is X+1,                                                                     %             ox
         checkBoardLimits(XL1, Y),
         \+checkPosForEmpty(Board, XL1, Y),
-        write('R1: '),
         write('Incompatibilidade na posição: '),write(XL1),write(', '),write(Y),nl.
 checkKingMovesRight1(_,_,_).
 
@@ -330,7 +335,6 @@ checkKingMovesRight2(Board, X, Y):-
         YL1 is Y+1,                                                                     %               x
         checkBoardLimits(XL1, YL1),        
         \+checkPosForEmpty(Board, XL1, YL1),
-        write('R2: '),
         write('Incompatibilidade na posição: '),write(XL1),write(', '),write(YL1),nl.
 
 checkKingMovesRight2(_,_,_).
@@ -341,7 +345,6 @@ checkKingMovesRight3(Board, X, Y):-
         YL1 is Y-1,                                                                     %              o 
         checkBoardLimits(XL1, YL1),
         \+checkPosForEmpty(Board, XL1, YL1),
-        write('R3: '),
         write('Incompatibilidade na posição: '),write(XL1),write(', '),write(YL1),nl.
 
 checkKingMovesRight3(_,_,_).
@@ -463,7 +466,8 @@ checkBishopAllMoves(Board, X, Y):-
         checkAllMovesDiagonalRT(Board, X, Y),
         checkAllMovesDiagonalRB(Board, X, Y).
         
-         
+% Verifying attacks made by the Knight - L positions verified
+        
 checkKnightAllMoves(Board, X, Y):-
         checkKnightMoveLT1(Board, X, Y),
         checkKnightMoveLT2(Board, X, Y),
@@ -475,14 +479,137 @@ checkKnightAllMoves(Board, X, Y):-
         checkKnightMoveRB2(Board, X, Y).
 
 checkKnightMoveLT1(Board, X, Y):-
+        NewX is X-1,
+        NewY is Y-2,
+        checkBoardLimits(NewX, NewY),
+        \+checkPosForEmpty(Board, NewX, NewY),
+        write('Knight: '),
+        write('Incompatibilidade na posição: '),write(NewX), write(', '), write(NewY),nl.
+
+checkKnightMoveLT1(_,_,_).
+
+checkKnightMoveLT2(Board, X, Y):-
+        NewX is X-2,
+        NewY is Y-1,
+        checkBoardLimits(NewX, NewY),
+        \+checkPosForEmpty(Board, NewX, NewY),
+        write('Knight: '),
+        write('Incompatibilidade na posição: '),write(NewX), write(', '), write(NewY),nl.
+
+checkKnightMoveLT2(_,_,_).
+
+checkKnightMoveLB1(Board, X, Y):-
+        NewX is X-2,
+        NewY is Y+1,
+        checkBoardLimits(NewX, NewY),
+        \+checkPosForEmpty(Board, NewX, NewY),
+        write('Knight: '),
+        write('Incompatibilidade na posição: '),write(NewX), write(', '), write(NewY),nl.
+
+checkKnightMoveLB1(_,_,_).
         
+checkKnightMoveLB2(Board, X, Y):-
+        NewX is X-1,
+        NewY is Y+2,
+        checkBoardLimits(NewX, NewY),
+        \+checkPosForEmpty(Board, NewX, NewY),
+        write('Knight: '),
+        write('Incompatibilidade na posição: '),write(NewX), write(', '), write(NewY),nl.
+
+checkKnightMoveLB2(_,_,_).
+
+checkKnightMoveRB1(Board, X, Y):-
+        NewX is X+1,
+        NewY is Y+2,
+        checkBoardLimits(NewX, NewY),
+        \+checkPosForEmpty(Board, NewX, NewY),
+        write('Knight: '),
+        write('Incompatibilidade na posição: '),write(NewX), write(', '), write(NewY),nl.
+
+checkKnightMoveRB1(_,_,_).
+
+checkKnightMoveRB2(Board, X, Y):-
+        NewX is X+2,
+        NewY is Y+1,
+        checkBoardLimits(NewX, NewY),
+        \+checkPosForEmpty(Board, NewX, NewY),
+        write('Knight: '),
+        write('Incompatibilidade na posição: '),write(NewX), write(', '), write(NewY),nl.
+
+checkKnightMoveRB2(_,_,_).
+
+checkKnightMoveRT1(Board, X, Y):-
+        NewX is X+2,
+        NewY is Y-1,
+        checkBoardLimits(NewX, NewY),
+        \+checkPosForEmpty(Board, NewX, NewY),
+        write('Knight: '),
+        write('Incompatibilidade na posição: '),write(NewX), write(', '), write(NewY),nl.
+
+checkKnightMoveRT1(_,_,_).
+
+checkKnightMoveRT2(Board, X, Y):-
+        NewX is X+1,
+        NewY is Y-2,
+        checkBoardLimits(NewX, NewY),
+        \+checkPosForEmpty(Board, NewX, NewY),
+        write('Knight: '),
+        write('Incompatibilidade na posição: '),write(NewX), write(', '), write(NewY),nl.
+        
+checkKnightMoveRT2(_,_,_).            
+
+% Verify attacks made by the Pawn - 1 or 2 positions ahead         
+
+checkPawnAllMoves(Board, X, Y):-
+        checkKingMovesLeft2(Board, X, Y),
+        checkKingMovesLeft3(Board, X, Y),
+        checkKingMovesRight2(Board, X, Y),
+        checkKingMovesRight3(Board, X, Y).
         
 
-              
-
-checkValidBoard(Board, X, Y):-
-        
+checkValidBoard(Board, X, Y):-        
         checkNextElem(Board, X, Y, Board).
+
+insertPiecesInRandomPositions(Board, Board6):-
+        random(1, 8, X1),
+       random(1, 8, Y1),
+       fillBoard(Board, Board1, 1, X1, Y1),
+       random(1, 8, X2),
+       random(1, 8, Y2),
+       checkPosForEmpty(Board1, X2, Y2),
+       fillBoard(Board1, Board2, 2, X2, Y2),
+       random(1, 8, X3),
+       random(1, 8, Y3),
+       checkPosForEmpty(Board2, X3, Y3),
+       fillBoard(Board2, Board3, 3, X3, Y3),
+       random(1, 8, X4),
+       random(1, 8, Y4),
+       checkPosForEmpty(Board3, X4, Y4),
+       fillBoard(Board3, Board4, 4, X4, Y4),
+       random(1, 8, X5),
+       random(1, 8, Y5),
+       checkPosForEmpty(Board4, X5, Y5),
+       fillBoard(Board4, Board5, 5, X5, Y5),
+       random(1, 8, X6),
+       random(1, 8, Y6),
+       checkPosForEmpty(Board5, X6, Y6),
+       fillBoard(Board5, Board6, 6, X6, Y6).
         
+
+generateAndTest(Board):-
+        insertPiecesInRandomPositions(Board, BoardOut),
+        ( checkValidBoard(BoardOut, 1, 1) ->
+        printBoard(BoardOut, 1)
+        ;
+        emptyboard(BoardIn),
+        generateAndTest(BoardIn)).
+                
+
+          
+       
+       
+       
+            
+       
                                                                                                                                                                                                                                                 
         
